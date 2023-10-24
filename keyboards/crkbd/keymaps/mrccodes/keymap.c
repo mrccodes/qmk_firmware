@@ -164,7 +164,7 @@ void draw_rect_filled(uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool 
 }
 
 
-void draw_gauge_bar(uint8_t *percentage) {
+void draw_gauge_bar(uint8_t percentage) {
     uint8_t y;
     uint8_t percentf = percentage / 10 * 4;
 

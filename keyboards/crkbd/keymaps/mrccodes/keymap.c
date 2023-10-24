@@ -33,13 +33,14 @@ enum crkbd_layers {
 
 // Create a struct to hold system data
 typedef struct {
+  char sys;
   uint8_t cpu;
   uint8_t gpu;
   uint8_t mem;
 } SystemMetrics;
 
 // Global variable to hold metrics
-SystemMetrics metrics = {0, 0, 0};
+SystemMetrics metrics = {'w', 0, 0, 0};
 
 
 #define RAISE MO(_RAISE)
@@ -123,6 +124,21 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 //         0};
 //     oled_write_P(crkbd_logo, false);
 // }
+
+uint8_t GAUGE_BAR_X = 45;
+uint8_t GAUGE_BAR_HEIGHT = 6;
+
+static void draw_line_h(uint8_t x, uint8_t y, uint8_t len, bool on) {
+     for (uint8_t i = 0; i < len; i++) {
+         oled_write_pixel(i + x, y, on);
+     }
+ }
+
+ static void draw_line_v(uint8_t x, uint8_t y, uint8_t len, bool on) {
+     for (uint8_t i = 0; i < len; i++) {
+         oled_write_pixel(x, i + y, on);
+     }
+ }
 
 void draw_rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool on) {
     uint8_t tempHeight;
@@ -275,20 +291,44 @@ void render_mod_status(uint8_t modifiers) {
     oled_write_P(PSTR("G"), (modifiers & MOD_MASK_GUI));
 }
 
-void render_bootmagic_status(void) {
+// void render_bootmagic_status(void) {
+//     /* Show Ctrl-Gui Swap options */
+//     static const char PROGMEM logo[][2][3] = {
+//         {{0x97, 0x98, 0}, {0xb7, 0xb8, 0}},
+//         {{0x95, 0x96, 0}, {0xb5, 0xb6, 0}},
+//     };
+//     oled_write_P(PSTR("BTMGK"), false);
+//     oled_write_P(PSTR(" "), false);
+//     oled_write_P(logo[0][0], !keymap_config.swap_lctl_lgui);
+//     oled_write_P(logo[1][0], keymap_config.swap_lctl_lgui);
+//     oled_write_P(PSTR(" "), false);
+//     oled_write_P(logo[0][1], !keymap_config.swap_lctl_lgui);
+//     oled_write_P(logo[1][1], keymap_config.swap_lctl_lgui);
+//     oled_write_P(PSTR(" NKRO"), keymap_config.nkro);
+// }
+
+void render_system_logo(char status)
+{
     /* Show Ctrl-Gui Swap options */
     static const char PROGMEM logo[][2][3] = {
         {{0x97, 0x98, 0}, {0xb7, 0xb8, 0}},
         {{0x95, 0x96, 0}, {0xb5, 0xb6, 0}},
     };
-    oled_write_P(PSTR("BTMGK"), false);
-    oled_write_P(PSTR(" "), false);
-    oled_write_P(logo[0][0], !keymap_config.swap_lctl_lgui);
-    oled_write_P(logo[1][0], keymap_config.swap_lctl_lgui);
-    oled_write_P(PSTR(" "), false);
-    oled_write_P(logo[0][1], !keymap_config.swap_lctl_lgui);
-    oled_write_P(logo[1][1], keymap_config.swap_lctl_lgui);
-    oled_write_P(PSTR(" NKRO"), keymap_config.nkro);
+
+    //switch for windows or apple logo
+    switch(status)
+    {
+        case 'w':
+            led_write_ln_P(logo[0][0], false);
+            oled_write_ln_P(logo[0][1], false);
+            break;
+        case 'a':
+            oled_write_ln_P(logo[1][0], false);
+            oled_write_ln_P(logo[1][1], false);
+            break;
+        default:
+            return;
+    }
 }
 
 void render_status_main(void) {
@@ -296,9 +336,7 @@ void render_status_main(void) {
     render_default_layer_state();
     render_keylock_status(host_keyboard_led_state());
     render_mod_status(get_mods());
-    // render_bootmagic_status();
-
-    // render_keylogger_status();
+    render_system_logo(metrics.sys);
 }
 
 bool oled_task_user(void) {

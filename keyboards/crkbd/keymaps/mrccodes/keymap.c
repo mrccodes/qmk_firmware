@@ -181,19 +181,19 @@ void draw_metrics(void) {
     // Draw CPU metrics
     snprintf(buf, sizeof(buf), "CPU %d%% | ", metrics.cpu);
     oled_write(buf, false);
-    draw_progress_bar(metrics.cpu);
+    draw_gauge_bar(metrics.cpu);
     oled_advance_page(true); // New line
 
     // Draw GPU metrics
     snprintf(buf, sizeof(buf), "GPU %d%% | ", metrics.gpu);
     oled_write(buf, false);
-    draw_progress_bar(metrics.gpu);
+    draw_gauge_bar(metrics.gpu);
     oled_advance_page(true); // New line
 
     // Draw MEM metrics
     snprintf(buf, sizeof(buf), "MEM %d%% | ", metrics.mem);
     oled_write(buf, false);
-    draw_progress_bar(metrics.mem);
+    draw_gauge_bar(metrics.mem);
     oled_advance_page(true); // New line
 
 }
@@ -319,7 +319,7 @@ void render_system_logo(char status)
     switch(status)
     {
         case 'w':
-            led_write_ln_P(logo[0][0], false);
+            oled_write_ln_P(logo[0][0], false);
             oled_write_ln_P(logo[0][1], false);
             break;
         case 'a':

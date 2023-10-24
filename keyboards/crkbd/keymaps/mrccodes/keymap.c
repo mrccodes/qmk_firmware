@@ -164,7 +164,7 @@ void draw_rect_filled(uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool 
 }
 
 
-void draw_gauge_bar(uint8_t percentage) {
+void draw_gauge_bar(uint8_t percentage, bool on) {
     uint8_t y;
     uint8_t percentf = percentage / 10 * 4;
 
@@ -174,26 +174,26 @@ void draw_gauge_bar(uint8_t percentage) {
     return;
 }
 
-void draw_metrics(void) {
+void draw_metrics(bool on) {
 
     char buf[30];
 
     // Draw CPU metrics
     snprintf(buf, sizeof(buf), "CPU %d%% | ", metrics.cpu);
     oled_write(buf, false);
-    draw_gauge_bar(metrics.cpu);
+    draw_gauge_bar(metrics.cpu, on);
     oled_advance_page(true); // New line
 
     // Draw GPU metrics
     snprintf(buf, sizeof(buf), "GPU %d%% | ", metrics.gpu);
     oled_write(buf, false);
-    draw_gauge_bar(metrics.gpu);
+    draw_gauge_bar(metrics.gpu, on);
     oled_advance_page(true); // New line
 
     // Draw MEM metrics
     snprintf(buf, sizeof(buf), "MEM %d%% | ", metrics.mem);
     oled_write(buf, false);
-    draw_gauge_bar(metrics.mem);
+    draw_gauge_bar(metrics.mem, on);
     oled_advance_page(true); // New line
 
 }
@@ -344,7 +344,7 @@ bool oled_task_user(void) {
     if (is_keyboard_master()) {
         render_status_main();  // Renders the current keyboard state (layer, lock, caps, scroll, etc)
     } else {
-        draw_metrics();
+        draw_metrics(true);
     }
     return false;
 }

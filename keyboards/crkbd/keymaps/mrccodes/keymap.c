@@ -164,9 +164,23 @@ void draw_rect_filled(uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool 
 }
 
 
-void draw_gauge_bar(uint8_t percentage, bool on) {
+void draw_gauge_bar(uint8_t percentage, char metric bool on) {
     uint8_t y;
     uint8_t percentf = percentage / 10 * 4;
+
+    switch(metric) {
+        case 'c':
+            y = 0;
+            break;
+        case 'g':
+            y = 8;
+            break;
+        case 'm':
+            y = 16;
+            break;
+        default:
+            return;
+    }
 
     draw_rect(GAUGE_BAR_X, y, 40, GAUGE_BAR_HEIGHT, on);
     draw_rect_filled(GAUGE_BAR_X, y, percentf, GAUGE_BAR_HEIGHT, on);
@@ -181,19 +195,19 @@ void draw_metrics(bool on) {
     // Draw CPU metrics
     snprintf(buf, sizeof(buf), "CPU %d%% | ", metrics.cpu);
     oled_write(buf, false);
-    draw_gauge_bar(metrics.cpu, on);
+    draw_gauge_bar(metrics.cpu, 'c', on);
     oled_advance_page(true); // New line
 
     // Draw GPU metrics
     snprintf(buf, sizeof(buf), "GPU %d%% | ", metrics.gpu);
     oled_write(buf, false);
-    draw_gauge_bar(metrics.gpu, on);
+    draw_gauge_bar(metrics.gpu, 'g', on);
     oled_advance_page(true); // New line
 
     // Draw MEM metrics
     snprintf(buf, sizeof(buf), "MEM %d%% | ", metrics.mem);
     oled_write(buf, false);
-    draw_gauge_bar(metrics.mem, on);
+    draw_gauge_bar(metrics.mem, 'm', on);
     oled_advance_page(true); // New line
 
 }

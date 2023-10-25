@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include QMK_KEYBOARD_H
 #include <stdint.h>
-#include <raw_hid.h>
+#include "hid.h"  // Make sure to include the appropriate header for HID
 
 // Each layer gets a name for readability, which is then used in the keymap matrix below.
 // The underscores don't mean anything - you can have a layer called STUFF or any other name.
@@ -212,16 +212,18 @@ void draw_metrics(bool on) {
 
 }
 
-void raw_hid_metrics(uint8_t *data, uint8_t length) {
- if (length < 1) {
+void raw_hid_receive(uint8_t *data, uint8_t length) {
+ if (length < 5) {
     return; // Not enough data to determine command
   }
     uint8_t command = data[0];
   switch(command) {
     case 0x01: // Command to update metrics
-        metrics.cpu = data[0];
-        metrics.gpu = data[1];
-        metrics.mem = data[2];
+        metrics.sys = data[1];
+        metrics.cpu = data[2];
+        metrics.gpu = data[3];
+        metrics.mem = data[4];
+
       break;
     case 0x02: // Command to display error message
         oled_write_P(PSTR("Error getting metrics"), false);

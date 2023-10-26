@@ -31,6 +31,10 @@ enum crkbd_layers {
     _ADJUST,
 };
 
+enum custom_keycodes {
+    TIMER_START = SAFE_RANGE,
+};
+
 // Create a struct to hold system data
 typedef struct {
   char sys;
@@ -41,6 +45,11 @@ typedef struct {
 
 // Global variable to hold metrics
 SystemMetrics metrics = {'w', 0, 0, 0};
+
+// setup dab timer bro
+uint16_t timer_start = 0;
+bool timer_active = false;
+
 
 
 #define RAISE MO(_RAISE)
@@ -90,7 +99,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [3] = LAYOUT_split_3x6_3(
         //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-            QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+            QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TIMER_START,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
             RGB_TOG, RGB_HUI, RGB_SAI, RGB_VAI, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -358,7 +367,26 @@ void render_status_main(void) {
 bool oled_task_user(void) {
     update_log();
     if (is_keyboard_master()) {
-        render_status_main();  // Renders the current keyboard state (layer, lock, caps, scroll, etc)
+        if (timer_active) {
+             uint16_t time_elapsed = timer_elapsed(timer_start);
+
+            if (time_elapsed > 90000) {
+                // Timer finished, reset
+                timer_active = false;
+                // Display "Timer Done!" on the OLED
+                oled_write_ln("Timer Done!", false);
+            } else {
+                // Calculate remaining time (in seconds)
+                uint16_t time_remaining = (90000 - time_elapsed) / 1000;
+
+                // Display remaining time on the OLED
+                char time_str[10];
+                snprintf(time_str, sizeof(time_str), "Time: %us", time_remaining);
+                oled_write_ln(time_str, false);
+            }
+        } else {
+            render_status_main();  // Renders the current keyboard state (layer, lock, caps, scroll, etc)
+        }
     } else {
         draw_metrics(true);
     }
@@ -368,6 +396,16 @@ bool oled_task_user(void) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
         add_keylog(keycode);
+    }
+
+    if (keycode === TIMER_START) {
+        if (record->event.pressed) {
+            timer_start = timer_read();
+            timer_active = true;
+        } else {
+            timer_active = false;
+            return false;
+        }
     }
     return true;
 }
